@@ -1,4 +1,5 @@
 -- please work otherwise amma kms (not doing it fr, just exaggerating)
+-- OPENWARE BY GOOBER 1.1
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -561,7 +562,7 @@ local function RunDupe(shouldKick)
 	OverlayLabel.Position = UDim2.new(0.5, 0, 0.45, 0)
 	OverlayLabel.AnchorPoint = Vector2.new(0.5, 0.5)
 	OverlayLabel.BackgroundTransparency = 1
-	OverlayLabel.Text = "Duping.. you may rejoin when complete"
+	OverlayLabel.Text = "Duping.. you may rejoin when complete... but wouldn't rejoin if you picked the other options"
 	OverlayLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 	OverlayLabel.TextScaled = true
 	OverlayLabel.Font = Enum.Font.SourceSansBold
@@ -576,7 +577,7 @@ local function RunDupe(shouldKick)
 	coroutine.wrap(function()
 		local QuestSettings = ReplicatedStorage:FindFirstChild("QuestSettings")
 		if not QuestSettings then
-			OverlayLabel.Text = "Error: QuestSettings not found."
+			OverlayLabel.Text = "Error: OH FUCK THERE'S NO QUESTSETTINGS THEY PATCHED IT :<"
 			return
 		end
 		local Quests = require(QuestSettings)
@@ -620,7 +621,7 @@ local function RunDupe(shouldKick)
 		end
 		if Success then
 			StatusLabel.TextColor3 = Color3.fromRGB(155, 255, 175)
-			StatusLabel.Text = "success!  discord.gg/popdupe"
+			StatusLabel.Text = "success!  discord.gg/popdupe (putting this link here for reasons)"
 		else
 			StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 			StatusLabel.Text = "Some items failed to dupe. Try again."
