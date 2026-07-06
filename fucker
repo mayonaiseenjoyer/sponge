@@ -58,12 +58,11 @@ Gradient.Color = ColorSequence.new({
 Gradient.Rotation = 140
 Gradient.Parent = MainFrame
 
--- ok so this does the dragging shit I believe
 local DragData = {dragging = false, startPos = nil, offset = nil}
 
-UserInputService.InputBegan:Connect(function(input, gp)
+local function HandleInputBegan(input, gp)
     if gp then return end
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         local ap = MainFrame.AbsolutePosition
         local as = MainFrame.AbsoluteSize
         local x, y = input.Position.X, input.Position.Y
@@ -73,19 +72,23 @@ UserInputService.InputBegan:Connect(function(input, gp)
             DragData.offset = MainFrame.Position
         end
     end
-end)
+end
 
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+local function HandleInputEnded(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         DragData.dragging = false
     end
-end)
+end
 
-UserInputService.InputChanged:Connect(function(input)
+local function HandleInputChanged(input)
     if not DragData.dragging then return end
     local delta = input.Position - DragData.startPos
     MainFrame.Position = UDim2.new(DragData.offset.X.Scale, DragData.offset.X.Offset + delta.X, DragData.offset.Y.Scale, DragData.offset.Y.Offset + delta.Y)
-end)
+end
+
+UserInputService.InputBegan:Connect(HandleInputBegan)
+UserInputService.InputEnded:Connect(HandleInputEnded)
+UserInputService.InputChanged:Connect(HandleInputChanged)
 
 local TitleBar = Instance.new("Frame")
 TitleBar.Size = UDim2.new(1, 0, 0, 34)
@@ -530,11 +533,12 @@ DupeButton.MouseButton1Click:Connect(function()
         StatusLabel.Text = "Required remote not found."
         return
     end
+
     local Overlay = Instance.new("Frame")
     Overlay.Size = UDim2.new(1, 0, 1, 0)
     Overlay.Position = UDim2.new(0, 0, 0, 0)
     Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    Overlay.BackgroundTransparency = 0.75
+    Overlay.BackgroundTransparency = 0
     Overlay.BorderSizePixel = 0
     Overlay.ZIndex = 100000
     Overlay.Parent = GUI
@@ -544,6 +548,7 @@ DupeButton.MouseButton1Click:Connect(function()
     OverlayImage.Position = UDim2.new(0, 0, 0, 0)
     OverlayImage.BackgroundTransparency = 1
     OverlayImage.Image = "rbxassetid://10251429179"
+    OverlayImage.ImageTransparency = 0.75
     OverlayImage.ZIndex = 100001
     OverlayImage.Parent = Overlay
 
@@ -611,7 +616,7 @@ DupeButton.MouseButton1Click:Connect(function()
         end
         if Success then
             StatusLabel.TextColor3 = Color3.fromRGB(155, 255, 175)
-            StatusLabel.Text = "success!  discord.gg/popdupe (I'm forced to put the server invite link for obvious reasons)"
+            StatusLabel.Text = "success!  discord.gg/popdupe"
         else
             StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
             StatusLabel.Text = "Some items failed to dupe. Try again."
