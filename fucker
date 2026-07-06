@@ -2,7 +2,7 @@
 -- looking for the code? of course you are, skid! :D
 -- But then again, here you go.
 
--- POPWARE OPEN-SOURCE TIME
+-- OPEN SOURCE POPWARE GO AHEAD I DON'T CARE BUT I GUESS IT'S A SPAWNER SCRIPT NOT A DUPER OKAY OKAY.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -611,7 +611,7 @@ DupeButton.MouseButton1Click:Connect(function()
         end
         if Success then
             StatusLabel.TextColor3 = Color3.fromRGB(155, 255, 175)
-            StatusLabel.Text = "success!  discord.gg/popdupe"
+            StatusLabel.Text = "success!  discord.gg/popdupe (I'm forced to put the server invite link for obvious reasons)"
         else
             StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
             StatusLabel.Text = "Some items failed to dupe. Try again."
