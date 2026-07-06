@@ -1,8 +1,4 @@
--- what are you doing here?
--- looking for the code? of course you are, skid! :D
--- But then again, here you go.
-
--- OPEN SOURCE POPWARE GO AHEAD I DON'T CARE BUT I GUESS IT'S A SPAWNER SCRIPT NOT A DUPER OKAY OKAY.
+-- please work otherwise amma kms (not doing it fr, just exaggerating)
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -14,17 +10,17 @@ local UserInputService = game:GetService("UserInputService")
 
 local GuiParent = CoreGui
 if not GuiParent then
-    if LocalPlayer then
-        GuiParent = LocalPlayer:FindFirstChild("PlayerGui")
-    end
-    if not GuiParent then
-        repeat task.wait() until LocalPlayer and LocalPlayer:FindFirstChild("PlayerGui")
-        GuiParent = LocalPlayer.PlayerGui
-    end
+	if LocalPlayer then
+		GuiParent = LocalPlayer:FindFirstChild("PlayerGui")
+	end
+	if not GuiParent then
+		repeat task.wait() until LocalPlayer and LocalPlayer:FindFirstChild("PlayerGui")
+		GuiParent = LocalPlayer.PlayerGui
+	end
 end
 
 if not GuiParent then
-    error("No GUI parent found.")
+	error("No GUI parent found.")
 end
 
 local GUI = Instance.new("ScreenGui")
@@ -32,6 +28,7 @@ GUI.Name = "OpenWare"
 GUI.Parent = GuiParent
 GUI.ResetOnSpawn = false
 GUI.IgnoreGuiInset = true
+GUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "mainbg"
@@ -51,44 +48,12 @@ Corner.Parent = MainFrame
 
 local Gradient = Instance.new("UIGradient")
 Gradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(42, 10, 70)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(24, 6, 42)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(12, 3, 24))
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(42, 10, 70)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(24, 6, 42)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(12, 3, 24))
 })
 Gradient.Rotation = 140
 Gradient.Parent = MainFrame
-
-local DragData = {dragging = false, startPos = nil, offset = nil}
-
-local function HandleInputBegan(input, gp)
-    if gp then return end
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        local ap = MainFrame.AbsolutePosition
-        local as = MainFrame.AbsoluteSize
-        local x, y = input.Position.X, input.Position.Y
-        if x >= ap.X and x <= ap.X + as.X and y >= ap.Y and y <= ap.Y + 34 then
-            DragData.dragging = true
-            DragData.startPos = input.Position
-            DragData.offset = MainFrame.Position
-        end
-    end
-end
-
-local function HandleInputEnded(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        DragData.dragging = false
-    end
-end
-
-local function HandleInputChanged(input)
-    if not DragData.dragging then return end
-    local delta = input.Position - DragData.startPos
-    MainFrame.Position = UDim2.new(DragData.offset.X.Scale, DragData.offset.X.Offset + delta.X, DragData.offset.Y.Scale, DragData.offset.Y.Offset + delta.Y)
-end
-
-UserInputService.InputBegan:Connect(HandleInputBegan)
-UserInputService.InputEnded:Connect(HandleInputEnded)
-UserInputService.InputChanged:Connect(HandleInputChanged)
 
 local TitleBar = Instance.new("Frame")
 TitleBar.Size = UDim2.new(1, 0, 0, 34)
@@ -103,8 +68,8 @@ TitleCorner.Parent = TitleBar
 
 local TitleGradient = Instance.new("UIGradient")
 TitleGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(165, 60, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 25, 180))
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(165, 60, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 25, 180))
 })
 TitleGradient.Parent = TitleBar
 
@@ -136,11 +101,39 @@ CloseCorner.CornerRadius = UDim.new(0, 5)
 CloseCorner.Parent = CloseBtn
 local CloseGrad = Instance.new("UIGradient")
 CloseGrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(190, 90, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 40, 210))
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(190, 90, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 40, 210))
 })
 CloseGrad.Parent = CloseBtn
 CloseBtn.MouseButton1Click:Connect(function() GUI:Destroy() end)
+
+local DragData = {dragging = false, startPos = nil, offset = nil}
+
+local function onDragStart(input)
+	if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+	if input.UserInputState == Enum.UserInputState.Begin then
+		DragData.dragging = true
+		DragData.startPos = input.Position
+		DragData.offset = MainFrame.Position
+	end
+end
+
+local function onDragEnd(input)
+	if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+	if input.UserInputState == Enum.UserInputState.End then
+		DragData.dragging = false
+	end
+end
+
+local function onDragMove(input)
+	if not DragData.dragging then return end
+	local delta = input.Position - DragData.startPos
+	MainFrame.Position = UDim2.new(DragData.offset.X.Scale, DragData.offset.X.Offset + delta.X, DragData.offset.Y.Scale, DragData.offset.Y.Offset + delta.Y)
+end
+
+TitleBar.InputBegan:Connect(onDragStart)
+TitleBar.InputEnded:Connect(onDragEnd)
+TitleBar.InputChanged:Connect(onDragMove)
 
 local TabBar = Instance.new("Frame")
 TabBar.Size = UDim2.new(1, 0, 0, 28)
@@ -152,8 +145,8 @@ TabBar.Parent = MainFrame
 
 local TabGrad = Instance.new("UIGradient")
 TabGrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 6, 52)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(14, 4, 26))
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 6, 52)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(14, 4, 26))
 })
 TabGrad.Parent = TabBar
 
@@ -170,17 +163,17 @@ IndCorner.CornerRadius = UDim.new(0, 2)
 IndCorner.Parent = TabIndicator
 
 local function MakeTabBtn(T, X, W)
-    local B = Instance.new("TextButton")
-    B.Size = UDim2.new(0, W, 1, -2)
-    B.Position = UDim2.new(0, X, 0, 0)
-    B.BackgroundTransparency = 1
-    B.Text = T
-    B.TextColor3 = Color3.fromRGB(180, 140, 220)
-    B.Font = Enum.Font.SourceSansBold
-    B.TextSize = 12
-    B.ZIndex = 4
-    B.Parent = TabBar
-    return B
+	local B = Instance.new("TextButton")
+	B.Size = UDim2.new(0, W, 1, -2)
+	B.Position = UDim2.new(0, X, 0, 0)
+	B.BackgroundTransparency = 1
+	B.Text = T
+	B.TextColor3 = Color3.fromRGB(180, 140, 220)
+	B.Font = Enum.Font.SourceSansBold
+	B.TextSize = 12
+	B.ZIndex = 4
+	B.Parent = TabBar
+	return B
 end
 
 local TabDupe = MakeTabBtn("Dupe", 0, 55)
@@ -227,6 +220,7 @@ CreditsTab.ZIndex = 2
 CreditsTab.Visible = false
 CreditsTab.Parent = ContentFrame
 
+-- bad piggies type shit
 local UsageFrame = Instance.new("Frame")
 UsageFrame.Size = UDim2.new(0, 90, 0, 22)
 UsageFrame.Position = UDim2.new(0, 10, 0, 8)
@@ -266,9 +260,39 @@ local SearchCorner = Instance.new("UICorner")
 SearchCorner.CornerRadius = UDim.new(0, 8)
 SearchCorner.Parent = SearchBox
 
+-- this one you gotta rejoin
+local DupeButton = Instance.new("TextButton")
+DupeButton.Size = UDim2.new(1, -20, 0, 36)
+DupeButton.Position = UDim2.new(0, 10, 0, 80)
+DupeButton.BackgroundColor3 = Color3.fromRGB(90, 25, 165)
+DupeButton.BorderSizePixel = 0
+DupeButton.Text = "Dupe (Rejoin)"
+DupeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+DupeButton.TextSize = 14
+DupeButton.Font = Enum.Font.SourceSansBold
+DupeButton.Parent = DupeTab
+local DupeCorner = Instance.new("UICorner")
+DupeCorner.CornerRadius = UDim.new(0, 8)
+DupeCorner.Parent = DupeButton
+
+-- no rejoin mehh
+local DupeNoRejoinButton = Instance.new("TextButton")
+DupeNoRejoinButton.Size = UDim2.new(1, -20, 0, 36)
+DupeNoRejoinButton.Position = UDim2.new(0, 10, 0, 125)
+DupeNoRejoinButton.BackgroundColor3 = Color3.fromRGB(90, 25, 165)
+DupeNoRejoinButton.BorderSizePixel = 0
+DupeNoRejoinButton.Text = "Dupe (No Rejoin)"
+DupeNoRejoinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+DupeNoRejoinButton.TextSize = 14
+DupeNoRejoinButton.Font = Enum.Font.SourceSansBold
+DupeNoRejoinButton.Parent = DupeTab
+local DupeNoRejoinCorner = Instance.new("UICorner")
+DupeNoRejoinCorner.CornerRadius = UDim.new(0, 8)
+DupeNoRejoinCorner.Parent = DupeNoRejoinButton
+
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, -20, 0, 22)
-StatusLabel.Position = UDim2.new(0, 10, 0, 122)
+StatusLabel.Position = UDim2.new(0, 10, 0, 170)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Text = ""
 StatusLabel.TextColor3 = Color3.fromRGB(155, 255, 175)
@@ -277,20 +301,7 @@ StatusLabel.TextSize = 13
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 StatusLabel.Parent = DupeTab
 
-local DupeButton = Instance.new("TextButton")
-DupeButton.Size = UDim2.new(1, -20, 0, 36)
-DupeButton.Position = UDim2.new(0, 10, 0, 80)
-DupeButton.BackgroundColor3 = Color3.fromRGB(90, 25, 165)
-DupeButton.BorderSizePixel = 0
-DupeButton.Text = "Dupe"
-DupeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-DupeButton.TextSize = 16
-DupeButton.Font = Enum.Font.SourceSansBold
-DupeButton.Parent = DupeTab
-local DupeCorner = Instance.new("UICorner")
-DupeCorner.CornerRadius = UDim.new(0, 8)
-DupeCorner.Parent = DupeButton
-
+-- fast drop only? hot damn
 local FeaturesTitle = Instance.new("TextLabel")
 FeaturesTitle.Size = UDim2.new(1, -20, 0, 20)
 FeaturesTitle.Position = UDim2.new(0, 10, 0, 10)
@@ -366,6 +377,7 @@ local FastDropBtnCorner = Instance.new("UICorner")
 FastDropBtnCorner.CornerRadius = UDim.new(0, 8)
 FastDropBtnCorner.Parent = FastDropButton
 
+-- fortnite looting moment 
 local LootsTitle = Instance.new("TextLabel")
 LootsTitle.Size = UDim2.new(1, -20, 0, 20)
 LootsTitle.Position = UDim2.new(0, 10, 0, 10)
@@ -425,6 +437,7 @@ LootsStatus.TextSize = 13
 LootsStatus.TextXAlignment = Enum.TextXAlignment.Left
 LootsStatus.Parent = LootsTab
 
+-- gotta pay respect to the original scripters
 local CreditsTitle = Instance.new("TextLabel")
 CreditsTitle.Size = UDim2.new(1, -20, 0, 20)
 CreditsTitle.Position = UDim2.new(0, 10, 0, 10)
@@ -459,28 +472,28 @@ CreditsText.ZIndex = 3
 CreditsText.Parent = CreditsTab
 
 local tabs = {
-    {frame = DupeTab, button = TabDupe, x = 0, w = 55},
-    {frame = FeaturesTab, button = TabFeatures, x = 55, w = 65},
-    {frame = LootsTab, button = TabLoots, x = 120, w = 55},
-    {frame = CreditsTab, button = TabCredits, x = 175, w = 65}
+	{frame = DupeTab, button = TabDupe, x = 0, w = 55},
+	{frame = FeaturesTab, button = TabFeatures, x = 55, w = 65},
+	{frame = LootsTab, button = TabLoots, x = 120, w = 55},
+	{frame = CreditsTab, button = TabCredits, x = 175, w = 65}
 }
 local currentTab = 1
 
 local function SwitchTab(index)
-    for i, t in ipairs(tabs) do
-        t.frame.Visible = (i == index)
-        if t.button then
-            t.button.TextColor3 = (i == index) and Color3.fromRGB(255, 245, 255) or Color3.fromRGB(180, 140, 220)
-        end
-    end
-    local t = tabs[index]
-    if t then
-        TweenService:Create(TabIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
-            Position = UDim2.new(0, t.x, 1, -2),
-            Size = UDim2.new(0, t.w, 0, 2)
-        }):Play()
-    end
-    currentTab = index
+	for i, t in ipairs(tabs) do
+		t.frame.Visible = (i == index)
+		if t.button then
+			t.button.TextColor3 = (i == index) and Color3.fromRGB(255, 245, 255) or Color3.fromRGB(180, 140, 220)
+		end
+	end
+	local t = tabs[index]
+	if t then
+		TweenService:Create(TabIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+			Position = UDim2.new(0, t.x, 1, -2),
+			Size = UDim2.new(0, t.w, 0, 2)
+		}):Play()
+	end
+	currentTab = index
 end
 
 TabDupe.MouseButton1Click:Connect(function() SwitchTab(1) end)
@@ -490,231 +503,227 @@ TabCredits.MouseButton1Click:Connect(function() SwitchTab(4) end)
 SwitchTab(1)
 
 local function GetRemotes()
-    local RE = ReplicatedStorage:FindFirstChild("RemoteEvents")
-    if not RE then return nil, nil, nil end
-    return RE:FindFirstChild("GetItem"), RE:FindFirstChild("Drop"), RE:FindFirstChild("Equip")
+	local RE = ReplicatedStorage:FindFirstChild("RemoteEvents")
+	if not RE then return nil, nil, nil end
+	return RE:FindFirstChild("GetItem"), RE:FindFirstChild("Drop"), RE:FindFirstChild("Equip")
 end
 
-DupeButton.MouseButton1Click:Connect(function()
-    local Input = SearchBox.Text
-    local Items = {}
-    if Input:find(",") then
-        for Item in Input:gmatch("[^,]+") do
-            local T = Item:gsub("^%s+", ""):gsub("%s+$", "")
-            if T ~= "" then table.insert(Items, T) end
-        end
-    else
-        local T = Input:gsub("^%s+", ""):gsub("%s+$", "")
-        if T ~= "" then table.insert(Items, T) end
-    end
-    if #Items == 0 then
-        StatusLabel.TextColor3 = Color3.fromRGB(255, 180, 60)
-        StatusLabel.Text = " Enter an item name first."
-        return
-    end
-    if #Items > 5 then
-        StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        StatusLabel.Text = " Maximum of 5 items allowed at once."
-        return
-    end
-    local ItemsFolder = ReplicatedStorage:FindFirstChild("Items")
-    local Valid = {}
-    for _, Name in ipairs(Items) do
-        if ItemsFolder and ItemsFolder:FindFirstChild(Name) then table.insert(Valid, Name) end
-    end
-    if #Valid == 0 then
-        StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        StatusLabel.Text = "No valid items found."
-        return
-    end
-    local GetItem, _, _ = GetRemotes()
-    if not GetItem then
-        StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        StatusLabel.Text = "Required remote not found."
-        return
-    end
+local function RunDupe(shouldKick)
+	local Input = SearchBox.Text
+	local Items = {}
+	if Input:find(",") then
+		for Item in Input:gmatch("[^,]+") do
+			local T = Item:gsub("^%s+", ""):gsub("%s+$", "")
+			if T ~= "" then table.insert(Items, T) end
+		end
+	else
+		local T = Input:gsub("^%s+", ""):gsub("%s+$", "")
+		if T ~= "" then table.insert(Items, T) end
+	end
+	if #Items == 0 then
+		StatusLabel.TextColor3 = Color3.fromRGB(255, 180, 60)
+		StatusLabel.Text = " Enter an item name first."
+		return
+	end
+	if #Items > 5 then
+		StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+		StatusLabel.Text = " Maximum of 5 items allowed at once."
+		return
+	end
+	local ItemsFolder = ReplicatedStorage:FindFirstChild("Items")
+	local Valid = {}
+	for _, Name in ipairs(Items) do
+		if ItemsFolder and ItemsFolder:FindFirstChild(Name) then table.insert(Valid, Name) end
+	end
+	if #Valid == 0 then
+		StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+		StatusLabel.Text = "No valid items found."
+		return
+	end
+	local GetItem, _, _ = GetRemotes()
+	if not GetItem then
+		StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+		StatusLabel.Text = "Required remote not found."
+		return
+	end
 
-    local Overlay = Instance.new("Frame")
-    Overlay.Size = UDim2.new(1, 0, 1, 0)
-    Overlay.Position = UDim2.new(0, 0, 0, 0)
-    Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    Overlay.BackgroundTransparency = 0
-    Overlay.BorderSizePixel = 0
-    Overlay.ZIndex = 100000
-    Overlay.Parent = GUI
+	local Overlay = Instance.new("Frame")
+	Overlay.Size = UDim2.new(1, 0, 1, 0)
+	Overlay.Position = UDim2.new(0, 0, 0, 0)
+	Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	Overlay.BackgroundTransparency = 0
+	Overlay.BorderSizePixel = 0
+	Overlay.ZIndex = 100000
+	Overlay.Parent = GUI
 
-    local OverlayImage = Instance.new("ImageLabel")
-    OverlayImage.Size = UDim2.new(1, 0, 1, 0)
-    OverlayImage.Position = UDim2.new(0, 0, 0, 0)
-    OverlayImage.BackgroundTransparency = 1
-    OverlayImage.Image = "rbxassetid://10251429179"
-    OverlayImage.ImageTransparency = 0.75
-    OverlayImage.ZIndex = 100001
-    OverlayImage.Parent = Overlay
+	local OverlayLabel = Instance.new("TextLabel")
+	OverlayLabel.Size = UDim2.new(0.8, 0, 0, 80)
+	OverlayLabel.Position = UDim2.new(0.5, 0, 0.45, 0)
+	OverlayLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+	OverlayLabel.BackgroundTransparency = 1
+	OverlayLabel.Text = "Duping.. you may rejoin when complete"
+	OverlayLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	OverlayLabel.TextScaled = true
+	OverlayLabel.Font = Enum.Font.SourceSansBold
+	OverlayLabel.ZIndex = 100001
+	OverlayLabel.Parent = Overlay
 
-    local OverlayLabel = Instance.new("TextLabel")
-    OverlayLabel.Size = UDim2.new(0.8, 0, 0, 80)
-    OverlayLabel.Position = UDim2.new(0.5, 0, 0.45, 0)
-    OverlayLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-    OverlayLabel.BackgroundTransparency = 1
-    OverlayLabel.Text = "Duping.. you may rejoin when complete"
-    OverlayLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    OverlayLabel.TextScaled = true
-    OverlayLabel.Font = Enum.Font.SourceSansBold
-    OverlayLabel.ZIndex = 100002
-    OverlayLabel.Parent = Overlay
+	local Blur = Instance.new("BlurEffect")
+	Blur.Size = 24
+	Blur.Enabled = true
+	Blur.Parent = Lighting
 
-    local Blur = Instance.new("BlurEffect")
-    Blur.Size = 24
-    Blur.Enabled = true
-    Blur.Parent = Lighting
+	coroutine.wrap(function()
+		local QuestSettings = ReplicatedStorage:FindFirstChild("QuestSettings")
+		if not QuestSettings then
+			OverlayLabel.Text = "Error: QuestSettings not found."
+			return
+		end
+		local Quests = require(QuestSettings)
+		local Success = false
+		for _, ItemName in ipairs(Valid) do
+			local QuestData = {questName = "Hole", prizeItem = ItemName, questRequiredItems = {"Simple Dimple"}}
+			for QuestId, QuestInfo in pairs(Quests) do
+				local Required = QuestInfo.questRequiredItems or {}
+				for _, Req in ipairs(Required) do
+					if ItemsFolder:FindFirstChild(Req) then
+						GetItem:FireServer(ItemsFolder[Req], QuestData)
+						GetItem:FireServer(ItemsFolder[Req], QuestData)
+					end
+				end
+				for i = 1, 350 do
+					if ItemsFolder:FindFirstChild(ItemName) then
+						GetItem:FireServer(ItemsFolder[ItemName], QuestData)
+						GetItem:FireServer(ItemsFolder[ItemName], QuestData)
+					end
+				end
+				local Next = Quests[QuestId + 1]
+				if Next then
+					local NextReq = Next.questRequiredItems or {}
+					for _, Req in ipairs(NextReq) do
+						if ItemsFolder:FindFirstChild(Req) then
+							GetItem:FireServer(ItemsFolder[Req], QuestData)
+							GetItem:FireServer(ItemsFolder[Req], QuestData)
+						end
+					end
+				end
+				for i = 1, 355 do
+					if ItemsFolder:FindFirstChild(ItemName) then
+						GetItem:FireServer(ItemsFolder[ItemName], QuestData)
+						GetItem:FireServer(ItemsFolder[ItemName], QuestData)
+					end
+				end
+				task.wait(5)
+			end
+			Success = true
+			task.wait(5)
+		end
+		if Success then
+			StatusLabel.TextColor3 = Color3.fromRGB(155, 255, 175)
+			StatusLabel.Text = "success!  discord.gg/popdupe"
+		else
+			StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+			StatusLabel.Text = "Some items failed to dupe. Try again."
+		end
+		TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+		task.wait(0.6)
+		Blur:Destroy()
+		Overlay:Destroy()
+		if Success and shouldKick and LocalPlayer then
+			LocalPlayer:Kick("Duping completed. Rejoin to see your items.")
+		end
+	end)()
+end
 
-    coroutine.wrap(function()
-        local QuestSettings = ReplicatedStorage:FindFirstChild("QuestSettings")
-        if not QuestSettings then
-            OverlayLabel.Text = "Error: QuestSettings not found."
-            return
-        end
-        local Quests = require(QuestSettings)
-        local Success = false
-        for _, ItemName in ipairs(Valid) do
-            local QuestData = {questName = "Hole", prizeItem = ItemName, questRequiredItems = {"Simple Dimple"}}
-            for QuestId, QuestInfo in pairs(Quests) do
-                local Required = QuestInfo.questRequiredItems or {}
-                for _, Req in ipairs(Required) do
-                    if ItemsFolder:FindFirstChild(Req) then
-                        GetItem:FireServer(ItemsFolder[Req], QuestData)
-                        GetItem:FireServer(ItemsFolder[Req], QuestData)
-                    end
-                end
-                for i = 1, 350 do
-                    if ItemsFolder:FindFirstChild(ItemName) then
-                        GetItem:FireServer(ItemsFolder[ItemName], QuestData)
-                        GetItem:FireServer(ItemsFolder[ItemName], QuestData)
-                    end
-                end
-                local Next = Quests[QuestId + 1]
-                if Next then
-                    local NextReq = Next.questRequiredItems or {}
-                    for _, Req in ipairs(NextReq) do
-                        if ItemsFolder:FindFirstChild(Req) then
-                            GetItem:FireServer(ItemsFolder[Req], QuestData)
-                            GetItem:FireServer(ItemsFolder[Req], QuestData)
-                        end
-                    end
-                end
-                for i = 1, 355 do
-                    if ItemsFolder:FindFirstChild(ItemName) then
-                        GetItem:FireServer(ItemsFolder[ItemName], QuestData)
-                        GetItem:FireServer(ItemsFolder[ItemName], QuestData)
-                    end
-                end
-                task.wait(5)
-            end
-            Success = true
-            task.wait(5)
-        end
-        if Success then
-            StatusLabel.TextColor3 = Color3.fromRGB(155, 255, 175)
-            StatusLabel.Text = "success!  discord.gg/popdupe"
-        else
-            StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-            StatusLabel.Text = "Some items failed to dupe. Try again."
-        end
-        TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-        task.wait(0.6)
-        Blur:Destroy()
-        Overlay:Destroy()
-        if Success and LocalPlayer then LocalPlayer:Kick("Duping completed. Rejoin to see your items.") end
-    end)()
-end)
+DupeButton.MouseButton1Click:Connect(function() RunDupe(true) end)
+DupeNoRejoinButton.MouseButton1Click:Connect(function() RunDupe(false) end)
 
 FastDropButton.MouseButton1Click:Connect(function()
-    local Item = FastDropBox.Text:gsub("^%s+", ""):gsub("%s+$", "")
-    if Item == "" then
-        FastDropStatus.TextColor3 = Color3.fromRGB(255, 180, 60)
-        FastDropStatus.Text = " Enter an item name first."
-        return
-    end
-    local _, Drop, Equip = GetRemotes()
-    if not Drop or not Equip then
-        FastDropStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
-        FastDropStatus.Text = "Required remotes not found."
-        return
-    end
-    coroutine.wrap(function()
-        for i = 1, 15 do
-            Drop:FireServer(Item)
-            Equip:FireServer(Item)
-            task.wait(0.25)
-        end
-        FastDropStatus.TextColor3 = Color3.fromRGB(155, 255, 175)
-        FastDropStatus.Text = "Fast dropped + equipped " .. Item .. " x15"
-    end)()
+	local Item = FastDropBox.Text:gsub("^%s+", ""):gsub("%s+$", "")
+	if Item == "" then
+		FastDropStatus.TextColor3 = Color3.fromRGB(255, 180, 60)
+		FastDropStatus.Text = " Enter an item name first."
+		return
+	end
+	local _, Drop, Equip = GetRemotes()
+	if not Drop or not Equip then
+		FastDropStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
+		FastDropStatus.Text = "Required remotes not found."
+		return
+	end
+	coroutine.wrap(function()
+		for i = 1, 15 do
+			Drop:FireServer(Item)
+			Equip:FireServer(Item)
+			task.wait(0.25)
+		end
+		FastDropStatus.TextColor3 = Color3.fromRGB(155, 255, 175)
+		FastDropStatus.Text = "Fast dropped + equipped " .. Item .. " x15"
+	end)()
 end)
 
 EggsButton.MouseButton1Click:Connect(function()
-    local ItemsFolder = ReplicatedStorage:FindFirstChild("Items")
-    if not ItemsFolder then
-        LootsStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
-        LootsStatus.Text = "Items folder not found."
-        return
-    end
-    local Eggs = {}
-    for _, Child in ipairs(ItemsFolder:GetChildren()) do
-        if Child.Name:lower():find("egg$") then table.insert(Eggs, Child.Name) end
-    end
-    if #Eggs == 0 then
-        LootsStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
-        LootsStatus.Text = "No eggs found."
-        return
-    end
-    local GetItem, _, _ = GetRemotes()
-    if not GetItem then
-        LootsStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
-        LootsStatus.Text = "Remote not found."
-        return
-    end
-    coroutine.wrap(function()
-        for _, Egg in ipairs(Eggs) do
-            local Obj = ItemsFolder:FindFirstChild(Egg)
-            if Obj then
-                GetItem:FireServer(Obj, {questName = "Dumplings Quest", questRequiredItems = {}, prizeItem = Egg})
-            end
-            task.wait(0.1)
-        end
-        LootsStatus.TextColor3 = Color3.fromRGB(155, 255, 175)
-        LootsStatus.Text = "Spawned " .. #Eggs .. " Robux Eggs"
-    end)()
+	local ItemsFolder = ReplicatedStorage:FindFirstChild("Items")
+	if not ItemsFolder then
+		LootsStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
+		LootsStatus.Text = "Items folder not found."
+		return
+	end
+	local Eggs = {}
+	for _, Child in ipairs(ItemsFolder:GetChildren()) do
+		if Child.Name:lower():find("egg$") then table.insert(Eggs, Child.Name) end
+	end
+	if #Eggs == 0 then
+		LootsStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
+		LootsStatus.Text = "No eggs found."
+		return
+	end
+	local GetItem, _, _ = GetRemotes()
+	if not GetItem then
+		LootsStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
+		LootsStatus.Text = "Remote not found."
+		return
+	end
+	coroutine.wrap(function()
+		for _, Egg in ipairs(Eggs) do
+			local Obj = ItemsFolder:FindFirstChild(Egg)
+			if Obj then
+				GetItem:FireServer(Obj, {questName = "Dumplings Quest", questRequiredItems = {}, prizeItem = Egg})
+			end
+			task.wait(0.1)
+		end
+		LootsStatus.TextColor3 = Color3.fromRGB(155, 255, 175)
+		LootsStatus.Text = "Spawned " .. #Eggs .. " Robux Eggs"
+	end)()
 end)
 
 DumplingButton.MouseButton1Click:Connect(function()
-    local ItemsFolder = ReplicatedStorage:FindFirstChild("Items")
-    if not ItemsFolder then
-        LootsStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
-        LootsStatus.Text = "Items folder not found."
-        return
-    end
-    local Box = ItemsFolder:FindFirstChild("Dumpling Box")
-    if not Box then
-        LootsStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
-        LootsStatus.Text = "Dumpling Box not found."
-        return
-    end
-    local GetItem, _, _ = GetRemotes()
-    if not GetItem then
-        LootsStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
-        LootsStatus.Text = "Remote not found."
-        return
-    end
-    coroutine.wrap(function()
-        for i = 1, 10 do
-            GetItem:FireServer(Box, {questName = "Dumplings Quest", questRequiredItems = {}, prizeItem = "Dumpling Box"})
-            task.wait(0.1)
-        end
-        LootsStatus.TextColor3 = Color3.fromRGB(155, 255, 175)
-        LootsStatus.Text = "Spawned 10 Dumpling Boxes"
-    end)()
+	local ItemsFolder = ReplicatedStorage:FindFirstChild("Items")
+	if not ItemsFolder then
+		LootsStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
+		LootsStatus.Text = "Items folder not found."
+		return
+	end
+	local Box = ItemsFolder:FindFirstChild("Dumpling Box")
+	if not Box then
+		LootsStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
+		LootsStatus.Text = "Dumpling Box not found."
+		return
+	end
+	local GetItem, _, _ = GetRemotes()
+	if not GetItem then
+		LootsStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
+		LootsStatus.Text = "Remote not found."
+		return
+	end
+	coroutine.wrap(function()
+		for i = 1, 10 do
+			GetItem:FireServer(Box, {questName = "Dumplings Quest", questRequiredItems = {}, prizeItem = "Dumpling Box"})
+			task.wait(0.1)
+		end
+		LootsStatus.TextColor3 = Color3.fromRGB(155, 255, 175)
+		LootsStatus.Text = "Spawned 10 Dumpling Boxes"
+	end)()
 end)
 
 print("OpenWare loaded - Credits: Goober (original script for the_modex and popit2)")
