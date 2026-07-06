@@ -1,6 +1,8 @@
--- skid. jk
+-- what are you doing here?
+-- looking for the code? of course you are, skid! :D
+-- But then again, here you go.
 
--- but i made it open-source. thank me later.
+-- POPWARE OPEN-SOURCE TIME
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -8,6 +10,7 @@ local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
 
 local GuiParent = CoreGui
 if not GuiParent then
@@ -25,7 +28,7 @@ if not GuiParent then
 end
 
 local GUI = Instance.new("ScreenGui")
-GUI.Name = "PopDupeGui"
+GUI.Name = "OpenWare"
 GUI.Parent = GuiParent
 GUI.ResetOnSpawn = false
 GUI.IgnoreGuiInset = true
@@ -55,6 +58,35 @@ Gradient.Color = ColorSequence.new({
 Gradient.Rotation = 140
 Gradient.Parent = MainFrame
 
+-- ok so this does the dragging shit I believe
+local DragData = {dragging = false, startPos = nil, offset = nil}
+
+UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local ap = MainFrame.AbsolutePosition
+        local as = MainFrame.AbsoluteSize
+        local x, y = input.Position.X, input.Position.Y
+        if x >= ap.X and x <= ap.X + as.X and y >= ap.Y and y <= ap.Y + 34 then
+            DragData.dragging = true
+            DragData.startPos = input.Position
+            DragData.offset = MainFrame.Position
+        end
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        DragData.dragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if not DragData.dragging then return end
+    local delta = input.Position - DragData.startPos
+    MainFrame.Position = UDim2.new(DragData.offset.X.Scale, DragData.offset.X.Offset + delta.X, DragData.offset.Y.Scale, DragData.offset.Y.Offset + delta.Y)
+end)
+
 local TitleBar = Instance.new("Frame")
 TitleBar.Size = UDim2.new(1, 0, 0, 34)
 TitleBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -77,7 +109,7 @@ local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(1, -60, 1, 0)
 TitleLabel.Position = UDim2.new(0.04, 0, 0, 0)
 TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "PopWare Freemium - Credits: wqcchard"
+TitleLabel.Text = "OpenWare"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 245, 255)
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.Font = Enum.Font.SourceSansBold
@@ -151,6 +183,7 @@ end
 local TabDupe = MakeTabBtn("Dupe", 0, 55)
 local TabFeatures = MakeTabBtn("Features", 55, 65)
 local TabLoots = MakeTabBtn("Loots", 120, 55)
+local TabCredits = MakeTabBtn("Credits", 175, 65)
 
 local ContentFrame = Instance.new("Frame")
 ContentFrame.Size = UDim2.new(1, 0, 1, -62)
@@ -182,6 +215,14 @@ LootsTab.BackgroundTransparency = 1
 LootsTab.ZIndex = 2
 LootsTab.Visible = false
 LootsTab.Parent = ContentFrame
+
+local CreditsTab = Instance.new("Frame")
+CreditsTab.Size = UDim2.new(1, 0, 1, 0)
+CreditsTab.Position = UDim2.new(0, 0, 0, 0)
+CreditsTab.BackgroundTransparency = 1
+CreditsTab.ZIndex = 2
+CreditsTab.Visible = false
+CreditsTab.Parent = ContentFrame
 
 local UsageFrame = Instance.new("Frame")
 UsageFrame.Size = UDim2.new(0, 90, 0, 22)
@@ -381,10 +422,44 @@ LootsStatus.TextSize = 13
 LootsStatus.TextXAlignment = Enum.TextXAlignment.Left
 LootsStatus.Parent = LootsTab
 
+local CreditsTitle = Instance.new("TextLabel")
+CreditsTitle.Size = UDim2.new(1, -20, 0, 20)
+CreditsTitle.Position = UDim2.new(0, 10, 0, 10)
+CreditsTitle.BackgroundTransparency = 1
+CreditsTitle.Text = "Credits"
+CreditsTitle.TextColor3 = Color3.fromRGB(255, 245, 255)
+CreditsTitle.Font = Enum.Font.SourceSansBold
+CreditsTitle.TextSize = 16
+CreditsTitle.TextXAlignment = Enum.TextXAlignment.Left
+CreditsTitle.ZIndex = 3
+CreditsTitle.Parent = CreditsTab
+
+local CreditsDivider = Instance.new("Frame")
+CreditsDivider.Size = UDim2.new(1, -20, 0, 1)
+CreditsDivider.Position = UDim2.new(0, 10, 0, 34)
+CreditsDivider.BackgroundColor3 = Color3.fromRGB(100, 40, 180)
+CreditsDivider.BorderSizePixel = 0
+CreditsDivider.ZIndex = 3
+CreditsDivider.Parent = CreditsTab
+
+local CreditsText = Instance.new("TextLabel")
+CreditsText.Size = UDim2.new(1, -20, 0, 100)
+CreditsText.Position = UDim2.new(0, 10, 0, 50)
+CreditsText.BackgroundTransparency = 1
+CreditsText.Text = "Original script for the_modex and popit2\nOpen-sourced by Goober\n\nCredit to wqcchard for initial development"
+CreditsText.TextColor3 = Color3.fromRGB(220, 200, 255)
+CreditsText.Font = Enum.Font.SourceSansBold
+CreditsText.TextSize = 14
+CreditsText.TextXAlignment = Enum.TextXAlignment.Left
+CreditsText.TextYAlignment = Enum.TextYAlignment.Top
+CreditsText.ZIndex = 3
+CreditsText.Parent = CreditsTab
+
 local tabs = {
     {frame = DupeTab, button = TabDupe, x = 0, w = 55},
     {frame = FeaturesTab, button = TabFeatures, x = 55, w = 65},
-    {frame = LootsTab, button = TabLoots, x = 120, w = 55}
+    {frame = LootsTab, button = TabLoots, x = 120, w = 55},
+    {frame = CreditsTab, button = TabCredits, x = 175, w = 65}
 }
 local currentTab = 1
 
@@ -408,6 +483,7 @@ end
 TabDupe.MouseButton1Click:Connect(function() SwitchTab(1) end)
 TabFeatures.MouseButton1Click:Connect(function() SwitchTab(2) end)
 TabLoots.MouseButton1Click:Connect(function() SwitchTab(3) end)
+TabCredits.MouseButton1Click:Connect(function() SwitchTab(4) end)
 SwitchTab(1)
 
 local function GetRemotes()
@@ -458,24 +534,36 @@ DupeButton.MouseButton1Click:Connect(function()
     Overlay.Size = UDim2.new(1, 0, 1, 0)
     Overlay.Position = UDim2.new(0, 0, 0, 0)
     Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    Overlay.BackgroundTransparency = 0
+    Overlay.BackgroundTransparency = 0.75
     Overlay.BorderSizePixel = 0
     Overlay.ZIndex = 100000
     Overlay.Parent = GUI
+
+    local OverlayImage = Instance.new("ImageLabel")
+    OverlayImage.Size = UDim2.new(1, 0, 1, 0)
+    OverlayImage.Position = UDim2.new(0, 0, 0, 0)
+    OverlayImage.BackgroundTransparency = 1
+    OverlayImage.Image = "rbxassetid://10251429179"
+    OverlayImage.ZIndex = 100001
+    OverlayImage.Parent = Overlay
+
     local OverlayLabel = Instance.new("TextLabel")
     OverlayLabel.Size = UDim2.new(0.8, 0, 0, 80)
     OverlayLabel.Position = UDim2.new(0.5, 0, 0.45, 0)
     OverlayLabel.AnchorPoint = Vector2.new(0.5, 0.5)
     OverlayLabel.BackgroundTransparency = 1
-    OverlayLabel.Text = "Duping.. you will rejoin once its done!"
+    OverlayLabel.Text = "Duping.. you may rejoin when complete"
+    OverlayLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     OverlayLabel.TextScaled = true
     OverlayLabel.Font = Enum.Font.SourceSansBold
-    OverlayLabel.ZIndex = 100001
+    OverlayLabel.ZIndex = 100002
     OverlayLabel.Parent = Overlay
+
     local Blur = Instance.new("BlurEffect")
     Blur.Size = 24
     Blur.Enabled = true
     Blur.Parent = Lighting
+
     coroutine.wrap(function()
         local QuestSettings = ReplicatedStorage:FindFirstChild("QuestSettings")
         if not QuestSettings then
@@ -523,7 +611,7 @@ DupeButton.MouseButton1Click:Connect(function()
         end
         if Success then
             StatusLabel.TextColor3 = Color3.fromRGB(155, 255, 175)
-            StatusLabel.Text = "success!"
+            StatusLabel.Text = "success!  discord.gg/popdupe"
         else
             StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
             StatusLabel.Text = "Some items failed to dupe. Try again."
@@ -624,4 +712,4 @@ DumplingButton.MouseButton1Click:Connect(function()
     end)()
 end)
 
-print("PopWare Opensource loaded - Credits: wqcchard")
+print("OpenWare loaded - Credits: Goober (original script for the_modex and popit2)")
