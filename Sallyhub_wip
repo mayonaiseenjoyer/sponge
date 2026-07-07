@@ -447,38 +447,80 @@ local function StartDupeLoop(itemName)
         return
     end
 
+    local QuestSettings = ReplicatedStorage:FindFirstChild("QuestSettings")
+    if not QuestSettings then
+        DupeStatus.Text = "Error: QuestSettings not found"
+        DupeStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
+        return
+    end
+
     isDuping = true
     stopDuping = false
     ShowOverlay()
 
-    local count = 0
-    local attempts = 0
+    local totalSent = 0
 
     task.spawn(function()
-        while not stopDuping and isDuping do
-            attempts = attempts + 1
-            pcall(function()
-                GetItem:FireServer(item, {
-                    questName = "Hole",
-                    prizeItem = itemName,
-                    questRequiredItems = {"Simple Dimple"}
-                })
-            end)
-            count = count + 1
-            if overlayLabel then
-                overlayLabel.Text = string.format("Duping... Count: %d", count)
+        local Quests = require(QuestSettings)
+        local success = false
+        for _, itemName in ipairs({itemName}) do
+            local questData = {questName = "Hole", prizeItem = itemName, questRequiredItems = {"Simple Dimple"}}
+            for questId, questInfo in pairs(Quests) do
+                if stopDuping then break end
+                local required = questInfo.questRequiredItems or {}
+                for _, req in ipairs(required) do
+                    if ItemsFolder:FindFirstChild(req) then
+                        GetItem:FireServer(ItemsFolder[req], questData)
+                        GetItem:FireServer(ItemsFolder[req], questData)
+                        totalSent = totalSent + 2
+                        if overlayLabel then overlayLabel.Text = string.format("Duping... Count: %d", totalSent) end
+                        task.wait(0.05)
+                    end
+                end
+                for i = 1, 350 do
+                    if stopDuping then break end
+                    if ItemsFolder:FindFirstChild(itemName) then
+                        GetItem:FireServer(ItemsFolder[itemName], questData)
+                        GetItem:FireServer(ItemsFolder[itemName], questData)
+                        totalSent = totalSent + 2
+                        if overlayLabel then overlayLabel.Text = string.format("Duping... Count: %d", totalSent) end
+                        task.wait(0.05)
+                    end
+                end
+                if stopDuping then break end
+                local nextQuest = Quests[questId + 1]
+                if nextQuest then
+                    local nextRequired = nextQuest.questRequiredItems or {}
+                    for _, req in ipairs(nextRequired) do
+                        if ItemsFolder:FindFirstChild(req) then
+                            GetItem:FireServer(ItemsFolder[req], questData)
+                            GetItem:FireServer(ItemsFolder[req], questData)
+                            totalSent = totalSent + 2
+                            if overlayLabel then overlayLabel.Text = string.format("Duping... Count: %d", totalSent) end
+                            task.wait(0.05)
+                        end
+                    end
+                end
+                for i = 1, 355 do
+                    if stopDuping then break end
+                    if ItemsFolder:FindFirstChild(itemName) then
+                        GetItem:FireServer(ItemsFolder[itemName], questData)
+                        GetItem:FireServer(ItemsFolder[itemName], questData)
+                        totalSent = totalSent + 2
+                        if overlayLabel then overlayLabel.Text = string.format("Duping... Count: %d", totalSent) end
+                        task.wait(0.05)
+                    end
+                end
+                task.wait(5)
             end
-            if attempts % 10 == 0 then
-                DupeStatus.Text = string.format("Duping: %d sent", count)
-                DupeStatus.TextColor3 = Color3.fromRGB(255, 255, 100)
-            end
-            task.wait(0.1)
+            success = true
+            task.wait(5)
         end
         if stopDuping then
             DupeStatus.Text = "Stopped by user"
             DupeStatus.TextColor3 = Color3.fromRGB(255, 180, 60)
         else
-            DupeStatus.Text = "Duping complete"
+            DupeStatus.Text = string.format("Duping complete! Sent %d items", totalSent)
             DupeStatus.TextColor3 = Color3.fromRGB(155, 255, 175)
         end
         isDuping = false
