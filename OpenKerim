@@ -1,0 +1,247 @@
+-- OpenKerim - Open-source version of Kerim Hub
+-- Original by KerimXBlox, open-sourced by Goober
+-- get rich quick with me
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+if not LocalPlayer then
+    repeat task.wait() until Players.LocalPlayer
+    LocalPlayer = Players.LocalPlayer
+end
+
+local PlaceId = game.PlaceId
+
+local function LoadGenericHub()
+    local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/liebertsx/Tora-Library/main/src/librarynew", true))()
+    local Window = Library.CreateWindow(Library, "Kerim Hub")
+
+    Window.AddToggle(Window, {
+        text = "Auto Rebirth",
+        callback = function(state)
+            getgenv().AutoRebirth = state
+            task.spawn(function()
+                while getgenv().AutoRebirth do
+                    pcall(function()
+                        ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Rebirth"):FireServer()
+                    end)
+                    task.wait(1)
+                end
+            end)
+        end
+    })
+
+    Window.AddToggle(Window, {
+        text = "Win TP Loop (50k)",
+        callback = function(state)
+            getgenv().WinTP = state
+            task.spawn(function()
+                while getgenv().WinTP do
+                    local char = LocalPlayer.Character
+                    if char then
+                        local root = char:FindFirstChild("HumanoidRootPart")
+                        if root then
+                            root.CFrame = CFrame.new(-5411.19189, 478.608124, 1456.95911)
+                        end
+                    end
+                    task.wait(0.8)
+                end
+            end)
+        end
+    })
+
+    Window.AddButton(Window, {
+        text = "Save Current Position",
+        callback = function()
+            getgenv().SavedPosition = LocalPlayer.Character and LocalPlayer.Character.HumanoidRootPart.CFrame
+        end
+    })
+
+    Window.AddToggle(Window, {
+        text = "Auto TP (Saved)",
+        callback = function(state)
+            getgenv().AutoTP = state
+            task.spawn(function()
+                while getgenv().AutoTP do
+                    if getgenv().SavedPosition and LocalPlayer.Character then
+                        LocalPlayer.Character.HumanoidRootPart.CFrame = getgenv().SavedPosition
+                    end
+                    task.wait(0.2)
+                end
+            end)
+        end
+    })
+
+    Window.AddSlider(Window, {
+        text = "WalkSpeed",
+        min = 16,
+        max = 300,
+        default = 16,
+        callback = function(value)
+            if LocalPlayer.Character then
+                local hum = LocalPlayer.Character:FindFirstChild("Humanoid")
+                if hum then hum.WalkSpeed = value end
+            end
+        end
+    })
+
+    Window.AddLabel(Window, {
+        text = "Made By: KerimXBlox (Open-source)"
+    })
+
+    Library.Init(Library)
+end
+
+local function LoadPopItHub()
+    local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+    local GetItemRemote = RemoteEvents:WaitForChild("GetItem")
+    local ItemsFolder = ReplicatedStorage:FindFirstChild("Items")
+
+    if not ItemsFolder then
+        warn("Items folder not found")
+        return
+    end
+
+    local Colors = {
+        BG = Color3.fromRGB(15, 15, 20),
+        Accent = Color3.fromRGB(120, 80, 255),
+        Row = Color3.fromRGB(35, 35, 45),
+        Text = Color3.fromRGB(240, 240, 240)
+    }
+
+    local function RoundCorners(gui)
+        Instance.new("UICorner", gui).CornerRadius = UDim.new(0, 8)
+    end
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "KerimHubPopIt"
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    ScreenGui.ResetOnSpawn = false
+
+    local MenuButton = Instance.new("TextButton")
+    MenuButton.Size = UDim2.new(0, 60, 0, 30)
+    MenuButton.Position = UDim2.new(0, 10, 0, 10)
+    MenuButton.Text = "MENU"
+    MenuButton.BackgroundColor3 = Colors.Accent
+    MenuButton.TextColor3 = Colors.Text
+    RoundCorners(MenuButton)
+    MenuButton.Parent = ScreenGui
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 240, 0, 300)
+    MainFrame.Position = UDim2.new(0.5, -120, 0.5, -150)
+    MainFrame.BackgroundColor3 = Colors.BG
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+    RoundCorners(MainFrame)
+    MainFrame.Visible = false
+    MainFrame.Parent = ScreenGui
+
+    MenuButton.MouseButton1Click:Connect(function()
+        MainFrame.Visible = not MainFrame.Visible
+    end)
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, 0, 0, 30)
+    Title.Position = UDim2.new(0, 0, 0, 5)
+    Title.Text = "MADE BY KERIMXBLOX (Open-source)"
+    Title.Font = Enum.Font.GothamBold
+    Title.BackgroundTransparency = 1
+    Title.Parent = MainFrame
+
+    task.spawn(function()
+        while Title.Parent do
+            Title.TextColor3 = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+            task.wait()
+        end
+    end)
+
+    local SearchBox = Instance.new("TextBox")
+    SearchBox.Size = UDim2.new(0.9, 0, 0, 30)
+    SearchBox.Position = UDim2.new(0.05, 0, 0.15, 0)
+    SearchBox.PlaceholderText = "Search..."
+    SearchBox.BackgroundColor3 = Colors.Row
+    SearchBox.TextColor3 = Colors.Text
+    RoundCorners(SearchBox)
+    SearchBox.Parent = MainFrame
+
+    local ItemList = Instance.new("ScrollingFrame")
+    ItemList.Size = UDim2.new(0.9, 0, 0, 200)
+    ItemList.Position = UDim2.new(0.05, 0, 0.3, 0)
+    ItemList.BackgroundTransparency = 1
+    ItemList.Parent = MainFrame
+
+    local ListLayout = Instance.new("UIListLayout")
+    ListLayout.Padding = UDim.new(0, 4)
+    ListLayout.Parent = ItemList
+
+    local function SpawnItem(item)
+        task.spawn(function()
+            for i = 1, 500 do
+                GetItemRemote:FireServer(item, {
+                    questName = "Dumplings Quest",
+                    questRequiredItems = {},
+                    prizeItem = "Rainbow Dumpling"
+                })
+            end
+        end)
+    end
+
+    local function RefreshItems()
+        for _, child in ipairs(ItemList:GetChildren()) do
+            if child:IsA("Frame") then child:Destroy() end
+        end
+
+        if not ItemsFolder then return end
+
+        local searchTerm = SearchBox.Text:lower()
+        for _, item in ipairs(ItemsFolder:GetChildren()) do
+            if item.Name:lower():find(searchTerm) then
+                local row = Instance.new("Frame")
+                row.Size = UDim2.new(1, 0, 0, 25)
+                row.BackgroundTransparency = 1
+                row.Parent = ItemList
+
+                local nameBtn = Instance.new("TextButton")
+                nameBtn.Size = UDim2.new(0.6, 0, 1, 0)
+                nameBtn.Text = item.Name
+                nameBtn.BackgroundColor3 = Colors.Row
+                nameBtn.TextColor3 = Colors.Text
+                RoundCorners(nameBtn)
+                nameBtn.Parent = row
+
+                local getBtn = Instance.new("TextButton")
+                getBtn.Size = UDim2.new(0.35, 0, 1, 0)
+                getBtn.Position = UDim2.new(0.65, 0, 0, 0)
+                getBtn.Text = "GET"
+                getBtn.BackgroundColor3 = Colors.Accent
+                getBtn.TextColor3 = Colors.Text
+                RoundCorners(getBtn)
+                getBtn.Parent = row
+
+                getBtn.MouseButton1Click:Connect(function()
+                    SpawnItem(item)
+                end)
+            end
+        end
+    end
+
+    SearchBox:GetPropertyChangedSignal("Text"):Connect(RefreshItems)
+
+    task.spawn(function()
+        task.wait(1)
+        RefreshItems()
+    end)
+end
+
+-- detect if there's a valid game
+if PlaceId == 7346416636 then
+    LoadPopItHub()
+elseif PlaceId == 98057644125816 then
+    LoadGenericHub()
+else
+    LoadGenericHub()
+end
+
+print("OpenKerim loaded successfully! Open-source version by Goober")
